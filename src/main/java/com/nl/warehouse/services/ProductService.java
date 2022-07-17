@@ -1,5 +1,7 @@
 package com.nl.warehouse.services;
 
+import com.nl.warehouse.events.publisher.SellProductPublisher;
+import com.nl.warehouse.exceptions.NoProductException;
 import com.nl.warehouse.models.Inventory;
 import com.nl.warehouse.models.Product;
 import com.nl.warehouse.models.ProductComposition;
@@ -27,8 +29,11 @@ public class ProductService extends WarehouseService {
 
     private final InventoryService inventoryService;
 
-    public ProductService(InventoryService inventoryService) {
+    private final SellProductPublisher  sellProductPublisher;
+
+    public ProductService(InventoryService inventoryService, SellProductPublisher sellProductPublisher) {
         this.inventoryService = inventoryService;
+        this.sellProductPublisher = sellProductPublisher;
     }
 
     @PostConstruct
@@ -73,6 +78,21 @@ public class ProductService extends WarehouseService {
 
     public void loadProducts(List<Product> products) {
         this.products = products.stream().collect(Collectors.toMap(Product::getName, product -> product));
+    }
+
+    public Product getProduct(String name) {
+        return this.products.get(name);
+    }
+
+    public void sellProduct(String name) {
+        Product product = getProduct(name);
+        if (isProductAvailable(product)) {
+            sellProductPublisher.publish(product);
+        } else {
+            throw new NoProductException(
+                    "Product " + name + " no longer in stock.");
+
+        }
     }
 
 }

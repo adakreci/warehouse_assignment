@@ -2,7 +2,6 @@ package com.nl.warehouse.controllers;
 
 import com.nl.warehouse.models.Article;
 import com.nl.warehouse.services.InventoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +15,12 @@ import java.util.Map;
 @RequestMapping(value = "/inventory")
 public class InventoryController {
 
-    @Autowired
+    final
     InventoryService inventoryService;
+
+    public InventoryController(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
+    }
 
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<Long, Article>> findAll() {
