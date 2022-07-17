@@ -1,0 +1,5 @@
+warehouse:
+  inventory:
+    file: inventory.json
+  products:
+    file: products.json
