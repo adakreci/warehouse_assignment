@@ -1,10 +1,13 @@
 package com.nl.warehouse.services;
 
+import com.nl.warehouse.events.SellEvent;
 import com.nl.warehouse.models.Article;
 import com.nl.warehouse.models.Inventory;
+import com.nl.warehouse.models.ProductComposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -55,6 +58,27 @@ public class InventoryService extends WarehouseService {
         } else {
             return false;
         }
+    }
+
+    @EventListener
+    public void handleContextStart(SellEvent event) {
+        log.info("Event for selling the product {}", event.getProduct().getName());
+        List<ProductComposition> parts = event.getProduct().getProductCompositions();
+        for (ProductComposition productPart : parts) {
+            if (isArticleAvailable(productPart.getId(), productPart.getAmount())) {
+                removeArticleFromStock(productPart.getId(), productPart.getAmount());
+            }
+        }
+    }
+
+    private void removeArticleFromStock(Long id, Long amount) {
+        log.info("Removing {} articles from stock for id {}", amount, id);
+        Article article = getArticle(id);
+        article.setStock(article.getStock() - amount);
+    }
+
+    private Article getArticle(Long id) {
+        return this.inventories.get(id);
     }
 
 }

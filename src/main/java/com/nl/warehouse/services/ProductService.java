@@ -29,7 +29,7 @@ public class ProductService extends WarehouseService {
 
     private final InventoryService inventoryService;
 
-    private final SellProductPublisher  sellProductPublisher;
+    private final SellProductPublisher sellProductPublisher;
 
     public ProductService(InventoryService inventoryService, SellProductPublisher sellProductPublisher) {
         this.inventoryService = inventoryService;
@@ -68,12 +68,16 @@ public class ProductService extends WarehouseService {
     }
 
     public boolean isProductAvailable(Product product) {
-        for (ProductComposition composition : product.getProductCompositions()) {
-            if (!inventoryService.isArticleAvailable(composition.getId(), composition.getAmount())) {
-                return false;
+        if(product != null) {
+            for (ProductComposition composition : product.getProductCompositions()) {
+                if (!inventoryService.isArticleAvailable(composition.getId(), composition.getAmount())) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            throw new NoProductException("product does not exist");
         }
-        return true;
     }
 
     public void loadProducts(List<Product> products) {
@@ -91,7 +95,6 @@ public class ProductService extends WarehouseService {
         } else {
             throw new NoProductException(
                     "Product " + name + " no longer in stock.");
-
         }
     }
 
